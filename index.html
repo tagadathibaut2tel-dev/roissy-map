@@ -115,7 +115,9 @@ function startGPS(){
             console.log("Précision :", pos.coords.accuracy);
 
             set(
-                ref(db,"players/"+playerName),
+                const playerId =
+playerName + "_" +
+Math.random().toString(36).slice(2,7);,
                 {
                     lat,
                     lng,
