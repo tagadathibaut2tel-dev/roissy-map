@@ -112,6 +112,7 @@ function startGPS(){
 
             const lat = pos.coords.latitude;
             const lng = pos.coords.longitude;
+            console.log("Précision :", pos.coords.accuracy);
 
             set(
                 ref(db,"players/"+playerName),
