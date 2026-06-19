@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Roissy Chat GPS</title>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+
+<style>
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: Arial, sans-serif;
+}
+
+#map {
+    width: 100%;
+    height: 100%;
+}
+
+#login {
+    position: absolute;
+    z-index: 2000;
+    top: 10px;
+    left: 10px;
+    background: white;
+    padding: 10px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.2);
+}
+
+input, button {
+    padding: 8px;
+    margin-top: 5px;
+}
+</style>
+</head>
+
+<body>
+
+<div id="login">
+    <div><b>Roissy Chat GPS</b></div>
+    <input id="pseudo" placeholder="Ton pseudo">
+    <button onclick="startGame()">Rejoindre</button>
+</div>
+
+<div id="map"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+import {
+    getDatabase,
+    ref,
+    set,
+    onValue
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBpjvldVHJg2yBaFvdh2Pw-wgC21DVHC4w",
+  authDomain: "roissy-chat-9462e.firebaseapp.com",
+  databaseURL: "https://roissy-chat-9462e-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "roissy-chat-9462e",
+  storageBucket: "roissy-chat-9462e.firebasestorage.app",
+  messagingSenderId: "513959735563",
+  appId: "1:513959735563:web:183925e948dadb9a0bb20e",
+  measurementId: "G-LXWSD3DVQ7"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+const map = L.map('map').setView([48.79, 2.65], 13);
+
+L.tileLayer(
+'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+{
+    attribution: '&copy; OpenStreetMap'
+}
+).addTo(map);
+
+let playerName = "";
+let markers = {};
+
+window.startGame = function() {
+
+    const pseudo = document.getElementById("pseudo").value.trim();
+
+    if(!pseudo){
+        alert("Entre un pseudo");
+        return;
+    }
+
+    playerName = pseudo;
+
+    document.getElementById("login").style.display = "none";
+
+    startGPS();
+    watchPlayers();
+}
+
+function startGPS(){
+
+    navigator.geolocation.watchPosition(
+
+        (pos)=>{
+
+            const lat = pos.coords.latitude;
+            const lng = pos.coords.longitude;
+
+console.log("Précision GPS :", pos.coords.accuracy, "mètres");
+
+            set(
+                ref(db,"players/"+playerName),
+                {
+                    lat,
+                    lng,
+                    timestamp: Date.now()
+                }
+            );
+
+            map.setView([lat,lng],16);
+
+        },
+
+        (err)=>{
+            alert("GPS refusé : " + err.message);
+        },
+
+        {
+            enableHighAccuracy:true
+        }
+
+    );
+}
+
+function watchPlayers(){
+
+    onValue(
+        ref(db,"players"),
+        (snapshot)=>{
+
+            const players = snapshot.val() || {};
+
+            for(const name in players){
+
+                const p = players[name];
+
+                if(!markers[name]){
+
+                    markers[name] = L.marker([p.lat,p.lng])
+                    .addTo(map)
+                    .bindPopup(name);
+
+                }else{
+
+                    markers[name].setLatLng([p.lat,p.lng]);
+
+                }
+            }
+
+        }
+    );
+
+}
+
+</script>
+
+</body>
+</html>
