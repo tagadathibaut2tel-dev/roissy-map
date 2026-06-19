@@ -4,61 +4,30 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Roissy Chat GPS</title>
-
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-
 <style>
-html, body {
-    margin: 0;
-    padding: 0;
-    height: 100%;
-    font-family: Arial, sans-serif;
-}
-
-#map {
-    width: 100%;
-    height: 100%;
-}
-
-#login {
-    position: absolute;
-    z-index: 2000;
-    top: 10px;
-    left: 10px;
-    background: white;
-    padding: 10px;
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.2);
-}
-
-input, button {
-    padding: 8px;
-    margin-top: 5px;
+html,body,#map{height:100%;margin:0}
+#login{
+position:absolute;z-index:1000;top:10px;left:10px;
+background:white;padding:10px;border-radius:8px;
+box-shadow:0 2px 8px rgba(0,0,0,.2)
 }
 </style>
 </head>
-
 <body>
-
 <div id="login">
-    <div><b>Roissy Chat GPS</b></div>
-    <input id="pseudo" placeholder="Ton pseudo">
-    <button onclick="startGame()">Rejoindre</button>
+<b>Roissy Chat GPS</b><br><br>
+<input id="pseudo" placeholder="Pseudo">
+<button onclick="startGame()">Rejoindre</button>
 </div>
-
 <div id="map"></div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script type="module">
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-
 import {
-    getDatabase,
-    ref,
-    set,
-    onValue
+getDatabase, ref, set, onValue, remove
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 const firebaseConfig = {
@@ -75,102 +44,79 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-const map = L.map('map').setView([48.79, 2.65], 13);
+const map = L.map('map').setView([48.79,2.65],13);
 
-L.tileLayer(
-'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-{
-    attribution: '&copy; OpenStreetMap'
-}
-).addTo(map);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+attribution:'© OpenStreetMap'
+}).addTo(map);
 
-let playerName = "";
-let markers = {};
+let playerName="";
+let playerId="";
+const markers={};
 
-window.startGame = function() {
+window.startGame=function(){
+ const pseudo=document.getElementById("pseudo").value.trim();
+ if(!pseudo){ alert("Entre un pseudo"); return; }
 
-    const pseudo = document.getElementById("pseudo").value.trim();
+ playerName=pseudo;
+ playerId=playerName+"_"+Math.random().toString(36).slice(2,7);
 
-    if(!pseudo){
-        alert("Entre un pseudo");
-        return;
-    }
+ window.addEventListener("beforeunload",()=>{
+   remove(ref(db,"players/"+playerId));
+ });
 
-    playerName = pseudo;
-
-    document.getElementById("login").style.display = "none";
-
-    startGPS();
-    watchPlayers();
+ document.getElementById("login").style.display="none";
+ startGPS();
+ watchPlayers();
 }
 
 function startGPS(){
+ navigator.geolocation.watchPosition(
+  (pos)=>{
+   const lat=pos.coords.latitude;
+   const lng=pos.coords.longitude;
 
-    navigator.geolocation.watchPosition(
+   console.log("Accuracy:",pos.coords.accuracy);
 
-        (pos)=>{
+   if(pos.coords.accuracy>100){
+     console.log("Position ignorée");
+     return;
+   }
 
-            const lat = pos.coords.latitude;
-            const lng = pos.coords.longitude;
-            console.log("Précision :", pos.coords.accuracy);
+   set(ref(db,"players/"+playerId),{
+    lat,lng,
+    timestamp:Date.now()
+   });
 
-            set(
-                const playerId =
-playerName + "_" +
-Math.random().toString(36).slice(2,7);,
-                {
-                    lat,
-                    lng,
-                    timestamp: Date.now()
-                }
-            );
-
-            map.setView([lat,lng],16);
-
-        },
-
-        (err)=>{
-            alert("GPS refusé : " + err.message);
-        },
-
-        {
-            enableHighAccuracy:true
-        }
-
-    );
+   map.setView([lat,lng],16);
+  },
+  (err)=>{
+   alert("GPS : "+err.message);
+  },
+  {enableHighAccuracy:true}
+ );
 }
 
 function watchPlayers(){
+ onValue(ref(db,"players"),(snapshot)=>{
+  const players=snapshot.val()||{};
 
-    onValue(
-        ref(db,"players"),
-        (snapshot)=>{
+  for(const name in players){
+   const p=players[name];
 
-            const players = snapshot.val() || {};
+   const age=Date.now()-(p.timestamp||0);
+   if(age>60000) continue;
 
-            for(const name in players){
-
-                const p = players[name];
-
-                if(!markers[name]){
-
-                    markers[name] = L.marker([p.lat,p.lng])
-                    .addTo(map)
-                    .bindPopup(name);
-
-                }else{
-
-                    markers[name].setLatLng([p.lat,p.lng]);
-
-                }
-            }
-
-        }
-    );
-
+   if(!markers[name]){
+    markers[name]=L.marker([p.lat,p.lng])
+      .addTo(map)
+      .bindPopup(name);
+   }else{
+    markers[name].setLatLng([p.lat,p.lng]);
+   }
+  }
+ });
 }
-
 </script>
-
 </body>
 </html>
