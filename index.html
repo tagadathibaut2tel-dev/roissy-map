@@ -117,7 +117,7 @@ function startGPS(){
 
    console.log("Accuracy:",pos.coords.accuracy);
 
-   if(pos.coords.accuracy>5000){
+   if(pos.coords.accuracy>10000){
      console.log("Position ignorée");
      return;
    }
