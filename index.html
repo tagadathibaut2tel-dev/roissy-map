@@ -13,12 +13,27 @@ background:white;padding:10px;border-radius:8px;
 box-shadow:0 2px 8px rgba(0,0,0,.2)
 }
 </style>
+  #players{
+position:absolute;
+top:10px;
+right:10px;
+z-index:1000;
+background:white;
+padding:10px;
+border-radius:8px;
+max-width:220px;
+box-shadow:0 2px 8px rgba(0,0,0,.2);
+}
 </head>
 <body>
 <div id="login">
 <b>Roissy Chat GPS</b><br><br>
 <input id="pseudo" placeholder="Pseudo">
 <button onclick="startGame()">Rejoindre</button>
+</div>
+  <div id="players">
+<b>Joueurs</b>
+<div id="playerList"></div>
 </div>
 <div id="map"></div>
 
@@ -53,6 +68,19 @@ attribution:'© OpenStreetMap'
 let playerName="";
 let playerId="";
 const markers={};
+  const redIcon = new L.Icon({
+ iconUrl:"https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png",
+ shadowUrl:"https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png",
+ iconSize:[25,41],
+ iconAnchor:[12,41]
+});
+
+const greenIcon = new L.Icon({
+ iconUrl:"https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png",
+ shadowUrl:"https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png",
+ iconSize:[25,41],
+ iconAnchor:[12,41]
+});
 
 window.startGame=function(){
  const pseudo=document.getElementById("pseudo").value.trim();
@@ -98,25 +126,57 @@ function startGPS(){
 }
 
 function watchPlayers(){
+
  onValue(ref(db,"players"),(snapshot)=>{
-  const players=snapshot.val()||{};
+
+  const players = snapshot.val() || {};
+
+  let playerListHTML = "";
 
   for(const name in players){
-   const p=players[name];
 
-   const age=Date.now()-(p.timestamp||0);
-   if(age>60000) continue;
+   const p = players[name];
+
+   playerListHTML += name + "<br>";
+
+   const age = Date.now() - (p.timestamp || 0);
+
+   if(age > 60000) continue;
 
    if(!markers[name]){
-    markers[name]=L.marker([p.lat,p.lng])
-      .addTo(map)
-      .bindPopup(name);
+
+    const icon =
+      name === playerId
+      ? redIcon
+      : greenIcon;
+
+    markers[name] = L.marker(
+      [p.lat,p.lng],
+      {icon}
+    ).addTo(map);
+
+    markers[name].bindTooltip(
+      name,
+      {
+       permanent:true,
+       direction:"top",
+       offset:[0,-10]
+      }
+    );
+
    }else{
-    markers[name].setLatLng([p.lat,p.lng]);
+
+    markers[name].setLatLng(
+      [p.lat,p.lng]
+    );
+
    }
   }
+
+  document.getElementById(
+    "playerList"
+  ).innerHTML = playerListHTML;
+
  });
+
 }
-</script>
-</body>
-</html>
