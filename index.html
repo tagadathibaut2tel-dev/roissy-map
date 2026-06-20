@@ -144,49 +144,44 @@ function watchPlayers(){
 
   let playerListHTML = "";
 
+  // Supprime tous les marqueurs actuels
+  for(const id in markers){
+    map.removeLayer(markers[id]);
+    delete markers[id];
+  }
+
   for(const name in players){
 
    const p = players[name];
-
-   playerListHTML += name + "<br>";
 
    const age = Date.now() - (p.timestamp || 0);
 
    if(age > 60000) continue;
 
-   if(!markers[name]){
+   playerListHTML += name + "<br>";
 
-    const icon =
+   const icon =
       name === playerId
       ? redIcon
       : greenIcon;
 
-    markers[name] = L.marker(
+   markers[name] = L.marker(
       [p.lat,p.lng],
       {icon}
-    ).addTo(map);
+   ).addTo(map);
 
-    markers[name].bindTooltip(
+   markers[name].bindTooltip(
       name,
       {
        permanent:true,
        direction:"top",
        offset:[0,-10]
       }
-    );
-
-   }else{
-
-    markers[name].setLatLng(
-      [p.lat,p.lng]
-    );
-
-   }
+   );
   }
 
-  document.getElementById(
-    "playerList"
-  ).innerHTML = playerListHTML;
+  document.getElementById("playerList").innerHTML =
+    playerListHTML;
 
  });
 
