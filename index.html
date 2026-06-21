@@ -60,7 +60,7 @@ max-width:400px;
 text-align:center;
 ">
 
-<h2>📢 Message organisateur</h2>
+<h2>📢 information </h2>
 
 <div id="announcementText"></div>
 
@@ -73,34 +73,7 @@ OK
 </button>
 
 </div>
-<div id="announcement" style="
-display:none;
-position:fixed;
-top:50%;
-left:50%;
-transform:translate(-50%,-50%);
-background:white;
-padding:20px;
-border:3px solid black;
-border-radius:10px;
-z-index:9999;
-max-width:400px;
-text-align:center;
-">
 
-<h2>📢 iformation </h2>
-
-<div id="announcementText"></div>
-
-<br>
-
-<button onclick="
-document.getElementById('announcement').style.display='none'
-">
-OK
-</button>
-
-</div> 
 <button
 style="
 position:absolute;
@@ -145,6 +118,9 @@ attribution:'© OpenStreetMap'
 let playerName="";
 let playerId="";
 const markers={};
+ 
+let lastAnnouncement = 0; 
+ 
   const redIcon = new L.Icon({
  iconUrl:"https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png",
  shadowUrl:"https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png",
@@ -252,9 +228,7 @@ function watchPlayers(){
 
    const p = players[name];
 
-   const age = Date.now() - (p.timestamp || 0);
 
-   if(age > 60000) continue;
 
   playerListHTML += (p.name || name) + "<br>";
 
@@ -292,6 +266,12 @@ function watchAnnouncements(){
 
    if(!data) return;
 
+   if(data.timestamp === lastAnnouncement){
+     return;
+   }
+
+   lastAnnouncement = data.timestamp;
+
    document.getElementById(
      "announcementText"
    ).innerText = data.text;
@@ -302,7 +282,7 @@ function watchAnnouncements(){
 
  });
 
-} 
+}
 </script>
 </body>
 </html>
