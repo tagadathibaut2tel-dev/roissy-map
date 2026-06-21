@@ -115,17 +115,6 @@ OK
 
 </div>
 
-<button
-style="
-position:absolute;
-bottom:10px;
-left:10px;
-z-index:1000;
-"
-onclick="organizerMenu()"
->
-⚙️ admin menu
-</button> 
 <div id="map"></div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -167,7 +156,9 @@ let lastAnnouncement = 0;
  shadowUrl:"https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png",
  iconSize:[25,41],
  iconAnchor:[12,41]
+
 });
+
 
 const greenIcon = new L.Icon({
  iconUrl:"https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png",
@@ -175,7 +166,34 @@ const greenIcon = new L.Icon({
  iconSize:[25,41],
  iconAnchor:[12,41]
 });
- 
+
+let pressTimer;
+
+document.addEventListener("DOMContentLoaded",()=>{
+
+ const playersBox = document.getElementById("players");
+
+ playersBox.addEventListener("touchstart",()=>{
+
+   pressTimer = setTimeout(()=>{
+     window.organizerMenu();
+   },2000);
+
+ });
+
+ playersBox.addEventListener("touchend",()=>{
+   clearTimeout(pressTimer);
+ });
+
+ playersBox.addEventListener("touchmove",()=>{
+   clearTimeout(pressTimer);
+ });
+
+ playersBox.addEventListener("touchcancel",()=>{
+   clearTimeout(pressTimer);
+ });
+
+});
 console.log("script chargé");
 window.startGame=function(){
  const pseudo=document.getElementById("pseudo").value.trim();
