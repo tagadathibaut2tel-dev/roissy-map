@@ -45,6 +45,73 @@ html,body,#map{
 <b>Joueurs</b>
 <div id="playerList"></div>
 </div>
+ <div id="announcement" style="
+display:none;
+position:fixed;
+top:50%;
+left:50%;
+transform:translate(-50%,-50%);
+background:white;
+padding:20px;
+border:3px solid black;
+border-radius:10px;
+z-index:9999;
+max-width:400px;
+text-align:center;
+">
+
+<h2>📢 Message organisateur</h2>
+
+<div id="announcementText"></div>
+
+<br>
+
+<button onclick="
+document.getElementById('announcement').style.display='none'
+">
+OK
+</button>
+
+</div>
+<div id="announcement" style="
+display:none;
+position:fixed;
+top:50%;
+left:50%;
+transform:translate(-50%,-50%);
+background:white;
+padding:20px;
+border:3px solid black;
+border-radius:10px;
+z-index:9999;
+max-width:400px;
+text-align:center;
+">
+
+<h2>📢 iformation </h2>
+
+<div id="announcementText"></div>
+
+<br>
+
+<button onclick="
+document.getElementById('announcement').style.display='none'
+">
+OK
+</button>
+
+</div> 
+<button
+style="
+position:absolute;
+bottom:10px;
+left:10px;
+z-index:1000;
+"
+onclick="organizerMenu()"
+>
+📢 Organisateur
+</button> 
 <div id="map"></div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -105,9 +172,37 @@ window.startGame=function(){
  });
 
  document.getElementById("login").style.display="none";
- startGPS();
- watchPlayers();
+startGPS();
+watchPlayers();
+watchAnnouncements();
 }
+window.organizerMenu=function(){
+
+ const code = prompt(
+   "Code organisateur"
+ );
+
+ if(code !== "13579"){
+   alert("Code incorrect");
+   return;
+ }
+
+ const message = prompt(
+   "Message à envoyer"
+ );
+
+ if(!message) return;
+
+ set(
+   ref(db,"announcement"),
+   {
+     text:message,
+     timestamp:Date.now()
+   }
+ );
+
+ alert("Annonce envoyée !");
+} 
 
 function startGPS(){
  navigator.geolocation.watchPosition(
@@ -139,6 +234,7 @@ function startGPS(){
 }
 
 function watchPlayers(){
+ 
 
  onValue(ref(db,"players"),(snapshot)=>{
 
@@ -188,6 +284,25 @@ function watchPlayers(){
  });
 
 }
+function watchAnnouncements(){
+
+ onValue(ref(db,"announcement"),(snapshot)=>{
+
+   const data = snapshot.val();
+
+   if(!data) return;
+
+   document.getElementById(
+     "announcementText"
+   ).innerText = data.text;
+
+   document.getElementById(
+     "announcement"
+   ).style.display = "block";
+
+ });
+
+} 
 </script>
 </body>
 </html>
