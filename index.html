@@ -115,6 +115,40 @@ OK
 
 </div>
 
+ <div id="adminPanel" style="
+display:none;
+position:fixed;
+top:50%;
+left:50%;
+transform:translate(-50%,-50%);
+background:white;
+padding:20px;
+border-radius:12px;
+box-shadow:0 0 20px rgba(0,0,0,.3);
+z-index:9999;
+width:300px;
+">
+
+<h2>⚙️ Administration</h2>
+
+<input id="adminMessage"
+placeholder="Message à envoyer"
+style="width:95%;margin-bottom:10px;">
+
+<br>
+
+<button onclick="sendAnnouncement()">
+📢 Envoyer
+</button>
+
+<button onclick="
+document.getElementById('adminPanel').style.display='none'
+">
+❌ Fermer
+</button>
+
+</div>
+
 <div id="map"></div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -235,14 +269,18 @@ watchAnnouncements();
 }
 window.organizerMenu=function(){
 
- const code = prompt(
-   "Code organisateur"
- );
+ const code = prompt("Code organisateur");
 
  if(code !== "13579"){
    alert("Code incorrect");
    return;
  }
+
+ document.getElementById(
+   "adminPanel"
+ ).style.display = "block";
+
+}
 
  const message = prompt(
    "Message à envoyer"
@@ -369,6 +407,33 @@ window.focusPlayer = function(id){
  );
 
  marker.openTooltip();
+
+}
+
+ window.sendAnnouncement=function(){
+
+ const message =
+ document.getElementById(
+   "adminMessage"
+ ).value;
+
+ if(!message) return;
+
+ set(
+   ref(db,"announcement"),
+   {
+     text:message,
+     timestamp:Date.now()
+   }
+ );
+
+ document.getElementById(
+   "adminPanel"
+ ).style.display = "none";
+
+ document.getElementById(
+   "adminMessage"
+ ).value = "";
 
 }
  
