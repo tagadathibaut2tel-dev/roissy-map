@@ -316,7 +316,16 @@ function watchPlayers(){
 
 
 
-  playerListHTML += (p.name || name) + "<br>";
+playerListHTML += `
+<div onclick="focusPlayer('${name}')"
+style="
+cursor:pointer;
+padding:4px;
+border-bottom:1px solid #ddd;
+">
+${p.name || name}
+</div>
+`;
 
    const icon =
       name === playerId
@@ -344,6 +353,25 @@ function watchPlayers(){
  });
 
 }
+
+window.focusPlayer = function(id){
+
+ const marker = markers[id];
+
+ if(!marker) return;
+
+ map.flyTo(
+   marker.getLatLng(),
+   18,
+   {
+     duration:1
+   }
+ );
+
+ marker.openTooltip();
+
+}
+ 
 function watchAnnouncements(){
 
  onValue(ref(db,"announcement"),(snapshot)=>{
