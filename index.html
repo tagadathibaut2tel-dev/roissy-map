@@ -150,6 +150,36 @@ style="width:95%;margin-bottom:10px;">
 
 <br>
 
+<hr>
+
+<h3>🤖 Bots</h3>
+
+<input
+id="botName"
+placeholder="Nom du bot">
+
+<br><br>
+
+<button onclick="createBot()">
+➕ Créer
+</button>
+
+<button onclick="deleteBot()">
+🗑️ Supprimer
+</button>
+
+<br><br>
+
+<input
+id="botSelect"
+placeholder="Nom du bot à modifier">
+
+<br><br>
+
+<button onclick="moveBot()">
+📍 Déplacer sur le clic carte
+</button>  
+
 <button onclick="sendAnnouncement()">
 📢 Envoyer
 </button>
@@ -187,6 +217,16 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
 const map = L.map('map').setView([48.79,2.65],13);
+map.on("click",(e)=>{
+
+ selectedMapPosition = e.latlng;
+
+ console.log(
+   "Position sélectionnée :",
+   selectedMapPosition
+ );
+
+}); 
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
 attribution:'© OpenStreetMap'
@@ -196,6 +236,8 @@ let playerName="";
 let playerId="";
 const markers={};
 let adminClicks = 0;
+let selectedBot = "";
+let selectedMapPosition = null; 
 
 document.addEventListener("DOMContentLoaded",()=>{
 
@@ -406,6 +448,78 @@ window.focusPlayer = function(id){
  marker.openTooltip();
 
 }
+
+window.createBot = function(){
+
+ const name =
+ document.getElementById("botName").value.trim();
+
+ if(!name){
+   alert("Nom du bot ?");
+   return;
+ }
+
+ const center = map.getCenter();
+
+ set(
+   ref(db,"players/BOT_"+name),
+   {
+     name:name,
+     lat:center.lat,
+     lng:center.lng,
+     timestamp:Date.now(),
+     bot:true
+   }
+ );
+
+ alert("Bot créé");
+
+} 
+
+window.deleteBot = function(){
+
+ const name =
+ document.getElementById("botSelect").value.trim();
+
+ if(!name) return;
+
+ remove(
+   ref(db,"players/BOT_"+name)
+ );
+
+ alert("Bot supprimé");
+
+} 
+
+window.moveBot = function(){
+
+ const name =
+ document.getElementById("botSelect").value.trim();
+
+ if(!name){
+   alert("Nom du bot ?");
+   return;
+ }
+
+ if(!selectedMapPosition){
+   alert("Clique sur la carte");
+   return;
+ }
+
+ set(
+   ref(db,"players/BOT_"+name),
+   {
+     name:name,
+     lat:selectedMapPosition.lat,
+     lng:selectedMapPosition.lng,
+     timestamp:Date.now(),
+     bot:true
+   }
+ );
+
+ alert("Bot déplacé");
+
+} 
 
  window.sendAnnouncement=function(){
 
