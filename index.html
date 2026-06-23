@@ -91,12 +91,28 @@ cursor:pointer;
 Roissy Chat GPS
 </b>
 <div id="login">
-<b>Roissy Chat GPS</b><br><br>
+
+<h2>Roissy Chat GPS</h2>
+
 <input id="pseudo" placeholder="Pseudo">
-<button onclick="startGame()">Rejoindre</button>
+
+<br><br>
+
+<button onclick="startGame('normal')">
+🎮 Mode Normal
+</button>
+
+<br><br>
+
+<button onclick="startGame('chat')">
+🐱 Mode Chat Famille
+</button>
+
 </div>
   <div id="players">
 <b>Joueurs</b>
+
+<div id="catsCount"></div>
 <div id="playerList"></div>
 </div>
  <div id="announcement" style="
@@ -192,6 +208,21 @@ document.getElementById('adminPanel').style.display='none'
 
 </div>
 
+ <div id="catButton"
+style="
+display:none;
+position:absolute;
+bottom:10px;
+left:10px;
+z-index:2000;
+">
+
+<button onclick="catTouched()">
+🐱 Je suis touché
+</button>
+
+</div>
+
 <div id="map"></div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -234,6 +265,8 @@ attribution:'© OpenStreetMap'
 
 let playerName="";
 let playerId="";
+let gameMode = "normal"; 
+let touched = false; 
 const markers={};
 let adminClicks = 0;
 let selectedBot = "";
@@ -306,7 +339,9 @@ document.addEventListener("DOMContentLoaded",()=>{
 
 });
 console.log("script chargé");
-window.startGame=function(){
+window.startGame=function(mode){
+
+ gameMode = mode;
  const pseudo=document.getElementById("pseudo").value.trim();
  if(!pseudo){ alert("Entre un pseudo"); return; }
 
@@ -318,6 +353,10 @@ window.startGame=function(){
  });
 
  document.getElementById("login").style.display="none";
+if(mode === "chat"){
+ document.getElementById("catButton").style.display =
+ "block";
+} 
 startGPS();
 watchPlayers();
 watchAnnouncements();
@@ -353,11 +392,13 @@ function startGPS(){
      return;
    }
 
-  set(ref(db,"players/"+playerId),{
-  name: playerName,
-  lat: lat,
-  lng: lng,
-  timestamp: Date.now()
+set(ref(db,"players/"+playerId),{
+ name: playerName,
+ lat: lat,
+ lng: lng,
+ timestamp: Date.now(),
+ mode: gameMode,
+touched: touched
 });
 
 if(firstPosition){
@@ -380,6 +421,7 @@ function watchPlayers(){
   const players = snapshot.val() || {};
 
   let playerListHTML = "";
+  let cats = 0;
 
   // Supprime tous les marqueurs actuels
   for(const id in markers){
@@ -388,6 +430,9 @@ function watchPlayers(){
   }
 
   for(const name in players){
+  if(players[name].touched){
+ cats++;
+} 
 
    const p = players[name];
 
@@ -400,7 +445,12 @@ cursor:pointer;
 padding:4px;
 border-bottom:1px solid #ddd;
 ">
+<span style="
+color:${p.touched ? 'red':'black'};
+font-weight:bold;
+">
 ${p.name || name}
+</span>
 </div>
 `;
 
@@ -426,6 +476,9 @@ ${p.name || name}
 
   document.getElementById("playerList").innerHTML =
     playerListHTML;
+
+  document.getElementById("catsCount").innerHTML =
+"🐱 Chats touchés : " + cats;
 
  });
 
@@ -547,6 +600,26 @@ window.moveBot = function(){
  ).value = "";
 
 }
+
+window.catTouched=function(){touched = true;
+
+ set(
+  ref(db,"players/"+playerId),
+  {
+   name:playerName,
+   lat:markers[playerId]
+      ? markers[playerId].getLatLng().lat
+      : 0,
+   lng:markers[playerId]
+      ? markers[playerId].getLatLng().lng
+      : 0,
+   timestamp:Date.now(),
+   mode:"chat",
+   touched:true
+  }
+ );
+
+} 
  
 function watchAnnouncements(){
 
