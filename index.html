@@ -469,6 +469,7 @@ let icon = greenIcon;
 
 if(p.touched){
  icon = catIcon;
+ cats++;
 }
 
 if(name === playerId){
@@ -531,7 +532,7 @@ window.createBot = function(){
  const center = map.getCenter();
 
  set(
-   ref(db,"players/BOT_"+name),
+ref(db,dbPath+"/BOT_"+name)
    {
      name:name,
      lat:center.lat,
@@ -578,18 +579,17 @@ window.moveBot = function(){
  set(
    ref(db,"players/BOT_"+name),
    {
- {
- name:name,
- lat:center.lat,
- lng:center.lng,
- timestamp:Date.now(),
- bot:true,
- mode:gameMode
-}
+     name:name,
+     lat:selectedMapPosition.lat,
+     lng:selectedMapPosition.lng,
+     timestamp:Date.now(),
+     bot:true,
+     mode:gameMode
+   }
+ );
 
  alert("Bot déplacé");
-
-} 
+}
 
  window.sendAnnouncement=function(){
 
@@ -618,26 +618,27 @@ window.moveBot = function(){
 
 }
 
-window.catTouched=function(){touched = true;
+window.catTouched = function(){
+
+ touched = true;
 
  set(
-ref(db,dbPath+"/"+playerId)
-  {
-   name:playerName,
-   lat:markers[playerId]
-      ? markers[playerId].getLatLng().lat
-      : 0,
-   lng:markers[playerId]
-      ? markers[playerId].getLatLng().lng
-      : 0,
-   timestamp:Date.now(),
-   mode:"chat",
-   touched:true
-  }
+   ref(db,dbPath+"/"+playerId),
+   {
+     name:playerName,
+     lat:markers[playerId]
+       ? markers[playerId].getLatLng().lat
+       : 0,
+     lng:markers[playerId]
+       ? markers[playerId].getLatLng().lng
+       : 0,
+     timestamp:Date.now(),
+     mode:"chat",
+     touched:true
+   }
  );
 
-} 
- 
+}
 function watchAnnouncements(){
 
  onValue(ref(db,"announcement"),(snapshot)=>{
