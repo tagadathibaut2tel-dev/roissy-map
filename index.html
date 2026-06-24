@@ -531,17 +531,16 @@ window.createBot = function(){
 
  const center = map.getCenter();
 
- set(
-ref(db,dbPath+"/BOT_"+name)
-   {
-     name:name,
-     lat:center.lat,
-     lng:center.lng,
-     timestamp:Date.now(),
-     bot:true
-   }
- );
-
+set(
+  ref(db,dbPath+"/BOT_"+name),
+  {
+    name:name,
+    lat:center.lat,
+    lng:center.lng,
+    timestamp:Date.now(),
+    bot:true
+  }
+);
  alert("Bot créé");
 
 } 
@@ -576,8 +575,8 @@ window.moveBot = function(){
    return;
  }
 
- set(
-   ref(db,"players/BOT_"+name),
+set(
+   ref(db,dbPath+"/BOT_"+name),
    {
      name:name,
      lat:selectedMapPosition.lat,
