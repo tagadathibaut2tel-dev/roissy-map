@@ -266,6 +266,7 @@ attribution:'© OpenStreetMap'
 let playerName="";
 let playerId="";
 let gameMode = "normal"; 
+let dbPath = "players"; 
 let touched = false; 
 const markers={};
 let adminClicks = 0;
@@ -310,7 +311,11 @@ const greenIcon = new L.Icon({
  iconSize:[25,41],
  iconAnchor:[12,41]
 });
-
+const catIcon = new L.Icon({
+ iconUrl:"https://cdn-icons-png.flaticon.com/512/616/616430.png",
+ iconSize:[40,40],
+ iconAnchor:[20,40]
+});
 let pressTimer;
 
 document.addEventListener("DOMContentLoaded",()=>{
@@ -342,6 +347,11 @@ console.log("script chargé");
 window.startGame=function(mode){
 
  gameMode = mode;
+ if(mode === "chat"){
+ dbPath = "cats";
+}else{
+ dbPath = "players";
+}
  const pseudo=document.getElementById("pseudo").value.trim();
  if(!pseudo){ alert("Entre un pseudo"); return; }
 
@@ -349,7 +359,7 @@ window.startGame=function(mode){
  playerId=playerName+"_"+Math.random().toString(36).slice(2,7);
 
  window.addEventListener("beforeunload",()=>{
-   remove(ref(db,"players/"+playerId));
+remove(ref(db,dbPath+"/"+playerId));
  });
 
  document.getElementById("login").style.display="none";
@@ -392,7 +402,7 @@ function startGPS(){
      return;
    }
 
-set(ref(db,"players/"+playerId),{
+set(ref(db,dbPath+"/"+playerId),{
  name: playerName,
  lat: lat,
  lng: lng,
@@ -416,7 +426,7 @@ if(firstPosition){
 function watchPlayers(){
  
 
- onValue(ref(db,"players"),(snapshot)=>{
+onValue(ref(db,dbPath),(snapshot)=>{
 
   const players = snapshot.val() || {};
 
@@ -429,12 +439,13 @@ function watchPlayers(){
     delete markers[id];
   }
 
-  for(const name in players){
-  if(players[name].touched){
- cats++;
-} 
+ for(const name in players){
 
-   const p = players[name];
+ const p = players[name];
+
+ if(p.mode !== gameMode){
+   continue;
+ }
 
 
 
@@ -454,10 +465,15 @@ ${p.name || name}
 </div>
 `;
 
-   const icon =
-      name === playerId
-      ? redIcon
-      : greenIcon;
+let icon = greenIcon;
+
+if(p.touched){
+ icon = catIcon;
+}
+
+if(name === playerId){
+ icon = redIcon;
+}
 
    markers[name] = L.marker(
       [p.lat,p.lng],
@@ -537,7 +553,7 @@ window.deleteBot = function(){
  if(!name) return;
 
  remove(
-   ref(db,"players/BOT_"+name)
+ref(db,dbPath+"/BOT_"+name)
  );
 
  alert("Bot supprimé");
@@ -562,13 +578,14 @@ window.moveBot = function(){
  set(
    ref(db,"players/BOT_"+name),
    {
-     name:name,
-     lat:selectedMapPosition.lat,
-     lng:selectedMapPosition.lng,
-     timestamp:Date.now(),
-     bot:true
-   }
- );
+ {
+ name:name,
+ lat:center.lat,
+ lng:center.lng,
+ timestamp:Date.now(),
+ bot:true,
+ mode:gameMode
+}
 
  alert("Bot déplacé");
 
@@ -604,7 +621,7 @@ window.moveBot = function(){
 window.catTouched=function(){touched = true;
 
  set(
-  ref(db,"players/"+playerId),
+ref(db,dbPath+"/"+playerId)
   {
    name:playerName,
    lat:markers[playerId]
