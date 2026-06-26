@@ -169,31 +169,30 @@ style="width:95%;margin-bottom:10px;">
 <hr>
 
 <h3>🤖 Bots</h3>
-
-<input
-id="botName"
-placeholder="Nom du bot">
-
-<br><br>
+<div id="botList"
+style="
+max-height:150px;
+overflow-y:auto;
+border:1px solid #ccc;
+padding:5px;
+margin-bottom:10px;
+">
+</div>
 
 <button onclick="createBot()">
-➕ Créer
+➕ Créer un bot
+</button>
+
+<button onclick="renameBot()">
+✏️ Renommer
 </button>
 
 <button onclick="deleteBot()">
 🗑️ Supprimer
 </button>
 
-<br><br>
-
-<input
-id="botSelect"
-placeholder="Nom du bot à modifier">
-
-<br><br>
-
 <button onclick="moveBot()">
-📍 Déplacer sur le clic carte
+📍 Déplacer
 </button>  
 
 <button onclick="sendAnnouncement()">
@@ -459,6 +458,7 @@ onValue(ref(db,dbPath),(snapshot)=>{
 
   let playerListHTML = "";
   let cats = 0;
+let botListHTML = ""; 
 
   // Supprime tous les marqueurs actuels
   for(const id in markers){
@@ -469,6 +469,20 @@ onValue(ref(db,dbPath),(snapshot)=>{
  for(const name in players){
 
  const p = players[name];
+ if(p.bot){
+
+ botListHTML += `
+ <div
+ onclick="selectedBot='${name}'"
+ style="
+ padding:5px;
+ cursor:pointer;
+ border-bottom:1px solid #ddd;
+ ">
+ ${p.name}
+ </div>
+ `;
+} 
 
  if(p.mode !== gameMode){
    continue;
@@ -536,6 +550,12 @@ for(const id in botsData){
  
   document.getElementById("playerList").innerHTML =
     playerListHTML;
+ const botList =
+document.getElementById("botList");
+
+if(botList){
+ botList.innerHTML = botListHTML;
+}
 
   document.getElementById("catsCount").innerHTML =
 "🐱 Chats touchés : " + cats;
