@@ -200,6 +200,18 @@ placeholder="Nom du bot à modifier">
 📢 Envoyer
 </button>
 
+<hr>
+
+<h3>🤖 Bots</h3>
+
+<div id="botList"
+style="
+max-height:150px;
+overflow-y:auto;
+border:1px solid #ccc;
+padding:5px;
+">
+</div>
 <button onclick="
 document.getElementById('adminPanel').style.display='none'
 ">
@@ -252,12 +264,25 @@ map.on("click",(e)=>{
 
  selectedMapPosition = e.latlng;
 
- console.log(
-   "Position sélectionnée :",
-   selectedMapPosition
- );
+ if(moveBotMode && selectedBot){
 
-}); 
+   const bot = botsData[selectedBot];
+
+   set(
+     ref(db,"bots/"+selectedBot),
+     {
+       ...bot,
+       lat:e.latlng.lat,
+       lng:e.latlng.lng
+     }
+   );
+
+   moveBotMode = false;
+
+   alert("Bot déplacé");
+ }
+
+});
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
 attribution:'© OpenStreetMap'
@@ -269,8 +294,10 @@ let gameMode = "normal";
 let dbPath = "players"; 
 let touched = false; 
 const markers={};
+const botsData = {}; 
 let adminClicks = 0;
 let selectedBot = "";
+let moveBotMode = false; 
 let selectedMapPosition = null; 
 
 document.addEventListener("DOMContentLoaded",()=>{
@@ -410,6 +437,9 @@ set(ref(db,dbPath+"/"+playerId),{
  timestamp: Date.now(),
  mode: gameMode,
 touched: touched
+
+document.getElementById("botList").innerHTML =
+botListHTML; 
 });
 
 if(firstPosition){
@@ -491,7 +521,23 @@ if(name === playerId){
       }
    );
   }
+for(const id in botsData){
 
+ const bot = botsData[id];
+
+ playerListHTML += `
+ <div onclick="focusPlayer('${id}')"
+ style="
+ cursor:pointer;
+ padding:4px;
+ border-bottom:1px solid #ddd;
+ color:blue;
+ ">
+ ${bot.name}
+ </div>
+ `;
+}
+ 
   document.getElementById("playerList").innerHTML =
     playerListHTML;
 
@@ -646,9 +692,26 @@ function watchBots(){
 
    const bots = snapshot.val() || {};
 
+ let botListHTML = "";
+
    for(const id in bots){
 
      const p = bots[id];
+
+botListHTML += `
+<div
+onclick="selectBot('${id}')"
+style="
+padding:5px;
+margin:2px;
+border:1px solid #ccc;
+cursor:pointer;
+">
+${p.name}
+</div>
+`;    
+
+botsData[id] = p;
 
      if(markers[id]){
        map.removeLayer(markers[id]);
