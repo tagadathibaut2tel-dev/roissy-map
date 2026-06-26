@@ -584,49 +584,44 @@ window.focusPlayer = function(id){
 
 window.createBot = function(){
 
- const name =
- document.getElementById("botName").value.trim();
-
- if(!name){
-   alert("Nom du bot ?");
-   return;
- }
-
- const center = map.getCenter();
-
-set(
-  ref(db,"bots/BOT_"+name),
-  {
-    name:name,
-    lat:center.lat,
-    lng:center.lng,
-    timestamp:Date.now(),
-    bot:true
-  }
-);
- alert("Bot créé");
-
-} 
-
-window.deleteBot = function(){
-
- const name =
- document.getElementById("botSelect").value.trim();
+ const name = prompt("Nom du bot ?");
 
  if(!name) return;
 
-remove(
- ref(db,"bots/BOT_"+name)
-);
+ const center = map.getCenter();
+
+ set(
+   ref(db,"bots/BOT_"+name),
+   {
+     name:name,
+     lat:center.lat,
+     lng:center.lng,
+     timestamp:Date.now(),
+     bot:true
+   }
+ );
+
+ alert("Bot créé");
+
+}
+window.deleteBot = function(){
+
+ const name = prompt("Nom du bot à supprimer ?");
+
+ if(!name) return;
+
+ remove(
+   ref(db,"bots/BOT_"+name)
+ );
 
  alert("Bot supprimé");
 
-} 
-
+}
 window.moveBot = function(){
 
- const name =
- document.getElementById("botSelect").value.trim();
+ const name = prompt("Nom du bot à déplacer ?");
+
+ if(!name) return;
 
  if(!name){
    alert("Nom du bot ?");
