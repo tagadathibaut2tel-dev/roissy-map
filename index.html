@@ -369,6 +369,7 @@ if(mode === "chat"){
 } 
 startGPS();
 watchPlayers();
+watchBots();
 watchAnnouncements();
 }
 window.organizerMenu=function(){
@@ -532,7 +533,7 @@ window.createBot = function(){
  const center = map.getCenter();
 
 set(
-  ref(db,dbPath+"/BOT_"+name),
+  ref(db,"bots/BOT_"+name),
   {
     name:name,
     lat:center.lat,
@@ -552,9 +553,9 @@ window.deleteBot = function(){
 
  if(!name) return;
 
- remove(
-ref(db,dbPath+"/BOT_"+name)
- );
+remove(
+ ref(db,"bots/BOT_"+name)
+);
 
  alert("Bot supprimé");
 
@@ -576,7 +577,7 @@ window.moveBot = function(){
  }
 
 set(
-   ref(db,dbPath+"/BOT_"+name),
+ ref(db,"bots/BOT_"+name),
    {
      name:name,
      lat:selectedMapPosition.lat,
@@ -638,6 +639,40 @@ window.catTouched = function(){
  );
 
 }
+
+function watchBots(){
+
+ onValue(ref(db,"bots"),(snapshot)=>{
+
+   const bots = snapshot.val() || {};
+
+   for(const id in bots){
+
+     const p = bots[id];
+
+     if(markers[id]){
+       map.removeLayer(markers[id]);
+     }
+
+     markers[id] = L.marker(
+       [p.lat,p.lng],
+       {icon:greenIcon}
+     ).addTo(map);
+
+     markers[id].bindTooltip(
+      p.name,
+       {
+         permanent:true,
+         direction:"top"
+       }
+     );
+
+   }
+
+ });
+
+}
+ 
 function watchAnnouncements(){
 
  onValue(ref(db,"announcement"),(snapshot)=>{
