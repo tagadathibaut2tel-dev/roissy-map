@@ -443,38 +443,102 @@ if(firstPosition){
  );
 }
 
-function watchPlayers(){
- 
 
-onValue(ref(db,dbPath),(snapshot)=>{
+
+function watchPlayers(){
+
+ onValue(ref(db,dbPath),(snapshot)=>{
 
   const players = snapshot.val() || {};
 
   let playerListHTML = "";
   let cats = 0;
-let botListHTML = ""; 
 
-  // Supprime tous les marqueurs actuels
-for(const id in markers){
+  // Supprime uniquement les marqueurs des joueurs
+  for(const id in markers){
 
- if(id.startsWith("BOT_")){
-   continue;
- }
+   if(id.startsWith("BOT_")){
+     continue;
+   }
 
- map.removeLayer(markers[id]);
- delete markers[id];
+   map.removeLayer(markers[id]);
+   delete markers[id];
+  }
+
+  for(const name in players){
+
+   const p = players[name];
+
+   playerListHTML += `
+   <div onclick="focusPlayer('${name}')"
+   style="
+   cursor:pointer;
+   padding:4px;
+   border-bottom:1px solid #ddd;
+   ">
+   <span style="
+   color:${p.touched ? 'red':'black'};
+   font-weight:bold;
+   ">
+   ${p.name || name}
+   </span>
+   </div>
+   `;
+
+   let icon = greenIcon;
+
+   if(p.touched){
+     icon = catIcon;
+     cats++;
+   }
+
+   if(name === playerId){
+     icon = redIcon;
+   }
+
+   markers[name] = L.marker(
+      [p.lat,p.lng],
+      {icon}
+   ).addTo(map);
+
+   markers[name].bindTooltip(
+      p.name || name,
+      {
+       permanent:true,
+       direction:"top",
+       offset:[0,-10]
+      }
+   );
+  }
+
+  // Ajout des bots dans la liste des joueurs
+  for(const id in botsData){
+
+   const bot = botsData[id];
+
+   playerListHTML += `
+   <div
+   onclick="focusPlayer('${id}')"
+   style="
+   cursor:pointer;
+   padding:4px;
+   border-bottom:1px solid #ddd;
+   color:blue;
+   ">
+   ${bot.name}
+   </div>
+   `;
+  }
+
+  document.getElementById("playerList").innerHTML =
+  playerListHTML;
+
+  document.getElementById("catsCount").innerHTML =
+  "🐱 Chats touchés : " + cats;
+
+ });
 
 }
-
- for(const name in players){
-
- const p = players[name];
-
-
- if(p.mode !== gameMode){
-   continue;
- }
-
 
 
 playerListHTML += `
