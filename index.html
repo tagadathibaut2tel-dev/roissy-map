@@ -360,6 +360,7 @@ if(mode === "chat"){
  "block";
 } 
 startGPS();
+watchPlayers();
 watchBots();
 watchAnnouncements();
 }
@@ -511,7 +512,7 @@ function watchPlayers(){
    );
   }
 
-  // Ajout des bots dans la liste des joueurs
+   // Ajout des bots dans la liste des joueurs
   for(const id in botsData){
 
    const bot = botsData[id];
@@ -530,91 +531,20 @@ function watchPlayers(){
    `;
   }
 
-  document.getElementById("playerList").innerHTML =
+   document.getElementById("playerList").innerHTML =
   playerListHTML;
 
   document.getElementById("catsCount").innerHTML =
   "🐱 Chats touchés : " + cats;
 
- });
+ }); // ferme onValue
 
-}
+} // ferme watchPlayers
+
+ 
 
 
-playerListHTML += `
-<div onclick="focusPlayer('${name}')"
-style="
-cursor:pointer;
-padding:4px;
-border-bottom:1px solid #ddd;
-">
-<span style="
-color:${p.touched ? 'red':'black'};
-font-weight:bold;
-">
-${p.name || name}
-</span>
-</div>
-`;
 
-let icon = greenIcon;
-
-if(p.touched){
- icon = catIcon;
- cats++;
-}
-
-if(name === playerId){
- icon = redIcon;
-}
-
-   markers[name] = L.marker(
-      [p.lat,p.lng],
-      {icon}
-   ).addTo(map);
-
-  markers[name].bindTooltip(
-  p.name || name,
-      {
-       permanent:true,
-       direction:"top",
-       offset:[0,-10]
-      }
-   );
-
-}
- for(const id in botsData){
-
- const bot = botsData[id];
-
- playerListHTML += `
- <div
- onclick="focusPlayer('${id}')"
- style="
- cursor:pointer;
- padding:4px;
- border-bottom:1px solid #ddd;
- color:black;
- ">
- {bot.name}
- </div>
- `;
-}
-  document.getElementById("playerList").innerHTML =
-    playerListHTML;
- const botList =
-document.getElementById("botList");
-
-if(botList){
- botList.innerHTML = botListHTML;
-}
-
-  document.getElementById("catsCount").innerHTML =
-"🐱 Chats touchés : " + cats;
-
- });
-
-}
 
 window.focusPlayer = function(id){
 
