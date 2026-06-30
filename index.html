@@ -360,7 +360,6 @@ if(mode === "chat"){
  "block";
 } 
 startGPS();
-watchPlayers();
 watchBots();
 watchAnnouncements();
 }
@@ -520,7 +519,23 @@ if(name === playerId){
    );
 
 }
- 
+ for(const id in botsData){
+
+ const bot = botsData[id];
+
+ playerListHTML += `
+ <div
+ onclick="focusPlayer('${id}')"
+ style="
+ cursor:pointer;
+ padding:4px;
+ border-bottom:1px solid #ddd;
+ color:black;
+ ">
+ {bot.name}
+ </div>
+ `;
+}
   document.getElementById("playerList").innerHTML =
     playerListHTML;
  const botList =
@@ -678,43 +693,22 @@ botsData[id] = p;
        {icon:greenIcon}
      ).addTo(map);
 
-     markers[id].bindTooltip(
+    markers[id].bindTooltip(
  p.name,
  {
    permanent:true,
    direction:"top",
-   offset:[0,-10]
+   offset:[0,-25]
  }
 );
 
    }
 
-let playersHTML = document.getElementById("playerList").innerHTML;
-
-for(const id in bots){
-
- const p = bots[id];
-
- playersHTML += `
- <div
- onclick="focusPlayer('${id}')"
- style="
- cursor:pointer;
- padding:4px;
- border-bottom:1px solid #ddd;
- color:blue;
- ">
- ${p.name}
- </div>
- `;
-}
-
-document.getElementById("playerList").innerHTML =
-playersHTML;  
+document.getElementById("botList").innerHTML =
+botListHTML; 
 document.getElementById("botList").innerHTML =
 botListHTML;
 
-watchPlayers();
  });
 
 }
