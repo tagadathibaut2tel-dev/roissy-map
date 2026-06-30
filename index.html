@@ -518,22 +518,7 @@ if(name === playerId){
        offset:[0,-10]
       }
    );
-  }
-for(const id in botsData){
 
- const bot = botsData[id];
-
- playerListHTML += `
- <div onclick="focusPlayer('${id}')"
- style="
- cursor:pointer;
- padding:4px;
- border-bottom:1px solid #ddd;
- color:blue;
- ">
- ${bot.name}
- </div>
- `;
 }
  
   document.getElementById("playerList").innerHTML =
@@ -694,16 +679,42 @@ botsData[id] = p;
      ).addTo(map);
 
      markers[id].bindTooltip(
-      p.name,
-       {
-         permanent:true,
-         direction:"top"
-       }
-     );
+ p.name,
+ {
+   permanent:true,
+   direction:"top",
+   offset:[0,-10]
+ }
+);
 
    }
+
+let playersHTML = document.getElementById("playerList").innerHTML;
+
+for(const id in bots){
+
+ const p = bots[id];
+
+ playersHTML += `
+ <div
+ onclick="focusPlayer('${id}')"
+ style="
+ cursor:pointer;
+ padding:4px;
+ border-bottom:1px solid #ddd;
+ color:blue;
+ ">
+ ${p.name}
+ </div>
+ `;
+}
+
+document.getElementById("playerList").innerHTML =
+playersHTML;  
 document.getElementById("botList").innerHTML =
-  botListHTML;
+botListHTML;
+
+watchPlayers();
  });
 
 }
