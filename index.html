@@ -289,7 +289,26 @@ let adminClicks = 0;
 let selectedBot = "";
 let moveBotMode = false; 
 let selectedMapPosition = null; 
+ 
+document.addEventListener("DOMContentLoaded",()=>{
 
+ document.getElementById("title")
+ .addEventListener("click",()=>{
+
+   adminClicks++;
+
+   if(adminClicks >= 3){
+     adminClicks = 0;
+     organizerMenu();
+   }
+
+   setTimeout(()=>{
+     adminClicks = 0;
+   },2000);
+
+ });
+
+});
  
  
 let lastAnnouncement = 0; 
@@ -315,15 +334,7 @@ const catIcon = new L.Icon({
  iconAnchor:[20,40]
 });
 
- playersBox.addEventListener("touchmove",()=>{
-   clearTimeout(pressTimer);
- });
 
- playersBox.addEventListener("touchcancel",()=>{
-   clearTimeout(pressTimer);
- });
-
-});
 console.log("script chargé");
 window.startGame=function(mode){
 
@@ -368,6 +379,35 @@ window.organizerMenu=function(){
 
 }
 
+window.renameBot = function(){
+
+ if(!selectedBot){
+   alert("Sélectionne un bot");
+   return;
+ }
+
+ const nouveauNom =
+ prompt("Nouveau nom ?");
+
+ if(!nouveauNom) return;
+
+ const bot = botsData[selectedBot];
+
+ set(
+   ref(db,"bots/BOT_"+nouveauNom),
+   {
+     ...bot,
+     name:nouveauNom
+   }
+ );
+
+ remove(
+   ref(db,"bots/"+selectedBot)
+ );
+
+ selectedBot = "";
+
+} 
  
 let firstPosition = true;
  
@@ -426,16 +466,12 @@ for(const id in markers){
  delete markers[id];
 
 }
-  }
 
  for(const name in players){
 
  const p = players[name];
- if(p.bot){
 
- botListHTML += `
- <div
- onclick="selectedBot='${name}'"
+onclick="selectBot('${name}')"
  style="
  padding:5px;
  cursor:pointer;
@@ -682,16 +718,7 @@ document.getElementById("botList").innerHTML =
 
 }
 
-window.selectBot = function(id){
 
- selectedBot = id;
-
- alert(
-   "Bot sélectionné : " +
-   botsData[id].name
- );
-
-}
 
 window.selectBot = function(id){
 
@@ -703,39 +730,22 @@ window.selectBot = function(id){
    alert("Bot sélectionné : " + bot.name);
  }
 
-} 
+}
 
 window.moveBot = function(){
 
  if(!selectedBot){
-   alert("Sélectionne un bot dans la liste");
+   alert("Sélectionne un bot");
    return;
  }
 
- if(!selectedMapPosition){
-   alert("Clique sur la carte");
-   return;
- }
+ moveBotMode = true;
 
- const bot = botsData[selectedBot];
-
- if(!bot){
-   alert("Bot introuvable");
-   return;
- }
-
- set(
-   ref(db,"bots/"+selectedBot),
-   {
-     ...bot,
-     lat:selectedMapPosition.lat,
-     lng:selectedMapPosition.lng
-   }
+ alert(
+   "Clique maintenant sur la carte pour déplacer le bot"
  );
 
- alert("Bot déplacé");
-
-} 
+}
  
 function watchAnnouncements(){
 
