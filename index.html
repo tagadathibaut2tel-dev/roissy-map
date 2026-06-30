@@ -201,16 +201,7 @@ margin-bottom:10px;
 
 <hr>
 
-<h3>🤖 Bots</h3>
 
-<div id="botList"
-style="
-max-height:150px;
-overflow-y:auto;
-border:1px solid #ccc;
-padding:5px;
-">
-</div>
 <button onclick="
 document.getElementById('adminPanel').style.display='none'
 ">
@@ -299,25 +290,6 @@ let selectedBot = "";
 let moveBotMode = false; 
 let selectedMapPosition = null; 
 
-document.addEventListener("DOMContentLoaded",()=>{
-
- document.getElementById("title")
- .addEventListener("click",()=>{
-
-   adminClicks++;
-
-   if(adminClicks>=3){
-     adminClicks=0;
-     organizerMenu();
-   }
-
-   setTimeout(()=>{
-     adminClicks=0;
-   },2000);
-
- });
-
-}); 
  
  
 let lastAnnouncement = 0; 
@@ -342,23 +314,6 @@ const catIcon = new L.Icon({
  iconSize:[40,40],
  iconAnchor:[20,40]
 });
-let pressTimer;
-
-document.addEventListener("DOMContentLoaded",()=>{
-
- const playersBox = document.getElementById("players");
-
- playersBox.addEventListener("touchstart",()=>{
-
-   pressTimer = setTimeout(()=>{
-     window.organizerMenu();
-   },2000);
-
- });
-
- playersBox.addEventListener("touchend",()=>{
-   clearTimeout(pressTimer);
- });
 
  playersBox.addEventListener("touchmove",()=>{
    clearTimeout(pressTimer);
@@ -461,9 +416,16 @@ onValue(ref(db,dbPath),(snapshot)=>{
 let botListHTML = ""; 
 
   // Supprime tous les marqueurs actuels
-  for(const id in markers){
-    map.removeLayer(markers[id]);
-    delete markers[id];
+for(const id in markers){
+
+ if(id.startsWith("BOT_")){
+   continue;
+ }
+
+ map.removeLayer(markers[id]);
+ delete markers[id];
+
+}
   }
 
  for(const name in players){
@@ -606,48 +568,20 @@ window.createBot = function(){
 }
 window.deleteBot = function(){
 
- const name = prompt("Nom du bot à supprimer ?");
-
- if(!name) return;
+ if(!selectedBot){
+   alert("Sélectionne un bot");
+   return;
+ }
 
  remove(
-   ref(db,"bots/BOT_"+name)
+   ref(db,"bots/"+selectedBot)
  );
+
+ selectedBot = "";
 
  alert("Bot supprimé");
 
 }
-window.moveBot = function(){
-
- const name = prompt("Nom du bot à déplacer ?");
-
- if(!name) return;
-
- if(!name){
-   alert("Nom du bot ?");
-   return;
- }
-
- if(!selectedMapPosition){
-   alert("Clique sur la carte");
-   return;
- }
-
-set(
- ref(db,"bots/BOT_"+name),
-   {
-     name:name,
-     lat:selectedMapPosition.lat,
-     lng:selectedMapPosition.lng,
-     timestamp:Date.now(),
-     bot:true,
-     mode:gameMode
-   }
- );
-
- alert("Bot déplacé");
-}
-
  window.sendAnnouncement=function(){
 
  const message =
@@ -742,10 +676,66 @@ botsData[id] = p;
      );
 
    }
-
+document.getElementById("botList").innerHTML =
+  botListHTML;
  });
 
 }
+
+window.selectBot = function(id){
+
+ selectedBot = id;
+
+ alert(
+   "Bot sélectionné : " +
+   botsData[id].name
+ );
+
+}
+
+window.selectBot = function(id){
+
+ selectedBot = id;
+
+ const bot = botsData[id];
+
+ if(bot){
+   alert("Bot sélectionné : " + bot.name);
+ }
+
+} 
+
+window.moveBot = function(){
+
+ if(!selectedBot){
+   alert("Sélectionne un bot dans la liste");
+   return;
+ }
+
+ if(!selectedMapPosition){
+   alert("Clique sur la carte");
+   return;
+ }
+
+ const bot = botsData[selectedBot];
+
+ if(!bot){
+   alert("Bot introuvable");
+   return;
+ }
+
+ set(
+   ref(db,"bots/"+selectedBot),
+   {
+     ...bot,
+     lat:selectedMapPosition.lat,
+     lng:selectedMapPosition.lng
+   }
+ );
+
+ alert("Bot déplacé");
+
+} 
  
 function watchAnnouncements(){
 
